@@ -68,7 +68,8 @@ class Game extends React.Component {
             // aqui ira preencher as 9 posicoes com null
             history: [{
                 squares: Array(9).fill(null),
-            }],            
+            }],
+            stepNumber: 0,
             xIsNext: true,
         };
         //console.log('Aq');
@@ -76,7 +77,7 @@ class Game extends React.Component {
 
     handleClick(i){
         //console.log('olah')
-        const history = this.state.history;
+        const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
         const squares = current.squares.slice();
         //console.log('esse '+calculateWinner(squares)+' '+squares[i]);
@@ -88,14 +89,33 @@ class Game extends React.Component {
             history: history.concat([{
                 squares: squares,
             }]),
+            stepNumber: history.length,
             xIsNext: !this.state.xIsNext,
+        });
+    }
+
+    jumpTo(step){
+        this.setState({
+            stepNumber: step,
+            xIsNext: (step % 2) === 0
         });
     }
 
     render() {
         const history = this.state.history;
-        const current = history[history.length - 1];
+        const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
+
+        const moves = history.map((step, move) => {
+            const desc = move ?
+            'Go to move #' + move :
+            'Go to game start';
+            return (
+                <li key={move}>
+                    <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                </li>
+            )
+        });
 
         let status;
         if(winner){
@@ -109,13 +129,13 @@ class Game extends React.Component {
                 <div className="game-board">
                     <Board 
                         squares={current.squares}
-                        onClick={(i) => this.handleClick(i)}
+                        onClick={i => this.handleClick(i)}
                     />
 
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <ol>{/* TODO */}</ol>
+                    <ol>{moves}</ol>
                 </div>
             </div>
         );
